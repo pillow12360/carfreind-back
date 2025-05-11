@@ -1,29 +1,15 @@
-// This is your Prisma schema file
-// Learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
-}
-
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // ✅ 반드시 이걸로 지정
   url      = env("DATABASE_URL")
 }
 
 model Customer {
-  id                String         @id @default(uuid()) @db.Uuid
-  name              String
-  email             String         @unique
-  phone_number      String
-  verification_code String?
-  code_expiry       DateTime?
-  created_at        DateTime       @default(now())
-  cars              Car[]
-  quote_requests    QuoteRequest[]
-  reviews           Review[]
-
-  @@map("customers")
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  email        String   @unique
+  phone_number String
+  cars         Car[]
+  created_at   DateTime @default(now())
 }
 
 model CarBrand {
@@ -31,113 +17,16 @@ model CarBrand {
   name       String   @unique
   created_at DateTime @default(now())
   cars       Car[]
-
-  @@map("car_brands")
 }
 
 model Car {
-  id             String         @id @default(uuid()) @db.Uuid
-  customer_id    String         @db.Uuid
-  brand_id       String         @db.Uuid
-  model          String
-  number_plate   String         @unique
-  created_at     DateTime       @default(now())
-  customer       Customer       @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  brand          CarBrand       @relation(fields: [brand_id], references: [id])
-  quote_requests QuoteRequest[]
+  id           String   @id @default(uuid()) @db.Uuid
+  customer_id  String   @db.Uuid
+  brand_id     String   @db.Uuid
+  model        String
+  number_plate String   @unique
+  created_at   DateTime @default(now())
 
-  @@map("cars")
-}
-
-model QuoteRequest {
-  id                        String      @id @default(uuid()) @db.Uuid
-  customer_id               String      @db.Uuid
-  car_id                    String      @db.Uuid
-  issue_cause               String
-  current_state             String
-  repair_description        String
-  visit_date                DateTime
-  status                    String // enum: pending, confirmed, waiting, in_progress, completed
-  estimated_completion_date DateTime?
-  special_notes             String?
-  created_at                DateTime    @default(now())
-  updated_at                DateTime    @updatedAt
-  customer                  Customer    @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  car                       Car         @relation(fields: [car_id], references: [id], onDelete: Cascade)
-  car_images                CarImage[]
-  quotes                    Quote[]
-  status_logs               StatusLog[]
-
-  @@map("quote_requests")
-}
-
-model CarImage {
-  id               String       @id @default(uuid()) @db.Uuid
-  quote_request_id String       @db.Uuid
-  storage_path     String
-  created_at       DateTime     @default(now())
-  quote_request    QuoteRequest @relation(fields: [quote_request_id], references: [id], onDelete: Cascade)
-
-  @@map("car_images")
-}
-
-model User {
-  id     String  @id @db.Uuid
-  email  String  @unique
-  role   String
-  quotes Quote[]
-
-  @@map("users")
-}
-
-model Quote {
-  id               String       @id @default(uuid()) @db.Uuid
-  quote_request_id String       @db.Uuid
-  estimated_price  Int
-  description      String
-  admin_id         String       @db.Uuid
-  created_at       DateTime     @default(now())
-  quote_request    QuoteRequest @relation(fields: [quote_request_id], references: [id], onDelete: Cascade)
-  admin            User         @relation(fields: [admin_id], references: [id])
-  repairs          Repair[]
-
-  @@map("quotes")
-}
-
-model Repair {
-  id             String   @id @default(uuid()) @db.Uuid
-  quote_id       String   @db.Uuid
-  actual_price   Int
-  repair_date    DateTime
-  repair_details String
-  created_at     DateTime @default(now())
-  quote          Quote    @relation(fields: [quote_id], references: [id], onDelete: Cascade)
-  reviews        Review[]
-
-  @@map("repairs")
-}
-
-model StatusLog {
-  id               String       @id @default(uuid()) @db.Uuid
-  quote_request_id String       @db.Uuid
-  previous_status  String
-  new_status       String
-  notes            String?
-  created_at       DateTime     @default(now())
-  quote_request    QuoteRequest @relation(fields: [quote_request_id], references: [id], onDelete: Cascade)
-
-  @@map("status_logs")
-}
-
-model Review {
-  id          String   @id @default(uuid()) @db.Uuid
-  customer_id String   @db.Uuid
-  repair_id   String   @db.Uuid
-  rating      Int
-  comment     String
-  created_at  DateTime @default(now())
-  customer    Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  repair      Repair   @relation(fields: [repair_id], references: [id], onDelete: Cascade)
-
-  @@map("reviews")
+  customer Customer @relation(fields: [customer_id], references: [id])
+  brand    CarBrand @relation(fields: [brand_id], references: [id])
 }
