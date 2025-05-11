@@ -1,6 +1,10 @@
 datasource db {
-  provider = "postgresql" // ✅ 반드시 이걸로 지정
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Customer {
@@ -10,6 +14,8 @@ model Customer {
   phone_number String
   cars         Car[]
   created_at   DateTime @default(now())
+
+  @@map("Customer")
 }
 
 model CarBrand {
@@ -17,6 +23,8 @@ model CarBrand {
   name       String   @unique
   created_at DateTime @default(now())
   cars       Car[]
+
+  @@map("CarBrand")
 }
 
 model Car {
@@ -29,4 +37,6 @@ model Car {
 
   customer Customer @relation(fields: [customer_id], references: [id])
   brand    CarBrand @relation(fields: [brand_id], references: [id])
+
+  @@map("Car")
 }
